@@ -1,6 +1,6 @@
 
 class GravSat {
-  constructor(r, t, satMass) {
+  constructor(r, t, satMass, isPreviousState) {
     this.pos = createVector(earth.pos.x + r * cos(t), earth.pos.y + -r * sin(t))
     this.vel = createVector(-sin(t), cos(t)).mult((G * earth.mass / r) ** 0.5)
     this.acc = createVector(0, 0)
@@ -19,23 +19,44 @@ class GravSat {
     this.initialPosition = createVector(earth.pos.x + r * cos(t), earth.pos.y + -r * sin(t))
     this.apoapsisVector = createVector(-1, 0)
     this.dvUsed = 0
+    this.isPreviousState = isPreviousState
+
+    if(!this.isPreviousState) {
+      this.previousObjectState = new GravSat(100, 0, this.mass, 1)
+    }
   }
 
   orbitUpdate(halt, propFidelity) {
+    //SAVE THIS STATE
+    if(!this.isPreviousState) {
+      this.copy(this.previousObjectState)
+    }
+
     if(halt == 0) {
       for(var i = 0; i < propFidelity; i++) {
         var gravVector = this.gravityVector.copy()
-
+        var gravUnitVector = p5.Vector.div(gravVector, gravVector.mag())
         var fmag = G * this.gravitySourceMass / gravVector.mag() ** 2
-        this.acc = gravVector.div(gravVector.mag()).mult(fmag)
+
+        this.acc = p5.Vector.mult(gravUnitVector, fmag)
         this.vel = createVector(this.vel.x + this.acc.x * deltaT / propFidelity, this.vel.y + this.acc.y * deltaT / propFidelity)
         this.pos = createVector(this.pos.x + this.vel.x * deltaT / propFidelity, this.pos.y + this.vel.y * deltaT / propFidelity)
 
         this.distToEarth = createVector(earth.pos.x - this.pos.x, earth.pos.y - this.pos.y).mag()
         this.distToMoon = createVector(moon.pos.x - this.pos.x, moon.pos.y - this.pos.y).mag()
         this.a = (this.apoapsis + this.periapsis) / 2
+
+        if(this.distToEarth * 2 < earth.mass) {
+          console.log("we're in the earth", this.distToEarth.toFixed(2) * 2, earth.mass, this.pos.x)
+          return 0
+        }
+        if(this.distToMoon * 2 < moon.mass) {
+          console.log("we're in the moon", this.distToMoon.toFixed(2) * 2, moon.mass, this.pos.x)
+          return 0
+        }
       }
     }
+    return 1
   }
 
   showSat() {
@@ -63,6 +84,7 @@ class GravSat {
     copyInto.a = parseFloat(this.a)
     copyInto.dvUsed = parseFloat(this.dvUsed)
     copyInto.mass = parseFloat(this.mass)
+    copyInto.ecc = parseFloat(this.ecc)
   }
 
   checkSOI() {
@@ -99,6 +121,7 @@ class GravSat {
     this.specificE = - G * earth.mass / (2 * this.a)
     this.period = 2 * PI * ((this.a) ** 3 / (G * earth.mass)) ** 0.5
     this.ecc = (this.apoapsis - this.periapsis) / (this.apoapsis + this.periapsis)
+    this.a = (this.periapsis + this.apoapsis) / 2
   }
 
   displayElements() {
@@ -111,7 +134,7 @@ class GravSat {
     text("theta: " + this.theta.toFixed(4), 100, 140)
     text("specificE: " + this.specificE.toFixed(4), 100, 160)
     text("period: " + this.period.toFixed(1), 100, 180)
-    text("ecc: " + this.ecc.toFixed(4), 100, 200)
+    text("ecc: " + this.ecc.toFixed(6), 100, 200)
     text("apo: " + this.apoapsis.toFixed(1), 100, 220)
     text("peri: " + this.periapsis.toFixed(1), 100, 240)
     text("a: " + this.a.toFixed(4), 100, 260)
@@ -134,7 +157,7 @@ class GravSat {
     this.periapsisVector = createVector(propagator.targetObject.gravityVector.x, propagator.targetObject.gravityVector.y)
     this.apoapsis = this.apoapsisVector.mag()
     this.periapsis = this.periapsisVector.mag()
-    this.a = (this.periapsis + this.apoapsis) / 2
+    // time.halt = 0
   }
 
   executeManeuver(dv) {
@@ -150,5 +173,9 @@ class GravSat {
     var targeter = new Targeter(this, "distToEarth", 200, 1, "framesElapsed", 1000, "burnV", 0.00, 100, 0.01)
     targeter.findPropagateTime()
     // console.log(propagator.targetObject, propagator.equalityParameter, propagator.equalityCondition)
+  }
+
+  undoLastTimeStep() { //THIS IS WRONG RIGHT NOW
+    this.previousObjectState.copy(this)
   }
 }

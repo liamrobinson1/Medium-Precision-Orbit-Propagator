@@ -78,8 +78,15 @@ class Time {
 function addImages() {
   push()
   // image(satImage, falcon.pos.x, falcon.pos.y)
-  image(earthImage, earth.pos.x - earth.mass / 2 - 1, earth.pos.y - earth.mass / 2 - 1)
-  image(moonImage, moon.pos.x - moon.mass / 2 - 1, moon.pos.y - moon.mass / 2 - 1)
+  translate(earth.pos.x, earth.pos.y)
+  rotate(moon.theta * 30)
+  image(earthImage, -earth.mass / 2 - 1, -earth.mass / 2 - 1)
+  pop()
+
+  push()
+  translate(moon.pos.x, moon.pos.y)
+  rotate(moon.theta)
+  image(moonImage, -moon.mass / 2 - 1, -moon.mass / 2 - 1)
   pop()
 }
 

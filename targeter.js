@@ -1,6 +1,6 @@
 class Targeter {
   constructor(targetObject, targetParameter, targetValue, propFidelity, propStopCondition, propStopValue, controlVariable, userGuess, attemptLimit, tolerance) {
-    let tempSat = new GravSat(0, 0, satMass)
+    let tempSat = new GravSat(targetObject.distToEarth, 0, satMass, 0)
     tempMoon = new Moon(parseFloat(moon.mass), parseFloat(moon.r), earth, parseFloat(moon.theta))
     targetObject.copy(tempSat)
     this.originalObject = targetObject
@@ -47,6 +47,7 @@ class Targeter {
 
   propagate(propFidelity, stopCondition, stopConditionValue) {
     this.propTrail = []
+    this.propSuccess = 1
     time.currentFrame += 1
     time.halt = 1
 
@@ -55,14 +56,18 @@ class Targeter {
     switch(stopCondition) {
       case "framesElapsed":
         for(var j = 0; j < stopConditionValue; j++) {
-          this.propagateStep(j, stopConditionValue, propFidelity)
+          if(this.propSuccess == 1) {
+            this.propagateStep(j, stopConditionValue, propFidelity)
+          }
         }
         break
 
       case "showFrames":
         for(var j = 0; j < stopConditionValue; j++) {
           time.halt = 0
-          this.propagateStep(j, stopConditionValue, propFidelity)
+          if(this.propSuccess == 1) {
+            this.propagateStep(j, stopConditionValue, propFidelity)
+          }
         }
         break
 
@@ -71,12 +76,12 @@ class Targeter {
         var fixed = 0
         var secondPreviousR = 0
         var previousR = parseFloat(this.targetObject.distToEarth - 1)
-        while((!(Math.sign(previousR - this.targetObject.distToEarth) == Math.sign(previousR - secondPreviousR)) || (previousR < this.targetObject.distToEarth)) && (i < 1000) || i < 3) {
+        while((!(Math.sign(previousR - this.targetObject.distToEarth) == Math.sign(previousR - secondPreviousR)) || (previousR < this.targetObject.distToEarth)) && this.propSuccess == 1 && (i < 1000) || i < 3) {
           this.targetMoon.propagate()
           secondPreviousR = previousR
           previousR = parseFloat(this.targetObject.distToEarth)
           this.targetObject.propagateSOI(this.targetMoon)
-          this.targetObject.orbitUpdate(0, propFidelity)
+          this.propSuccess = parseInt(this.targetObject.orbitUpdate(0, propFidelity))
 
           //FINDING E AND THINGS
           if(i == 1 && stopConditionValue != "CORRECTING_DO_NOT_SUBCALL") {
@@ -92,6 +97,8 @@ class Targeter {
             fixed = 1
           }
         }
+        //CHANGED
+        this.targetObject.previousObjectState.copy(this.targetObject)
         break
 
         case "periapsis":
@@ -99,12 +106,12 @@ class Targeter {
           var fixed = 0
           var secondPreviousR = 0
           var previousR = parseFloat(this.targetObject.distToEarth - 1)
-          while((!(Math.sign(previousR - this.targetObject.distToEarth) == Math.sign(previousR - secondPreviousR)) || (previousR > this.targetObject.distToEarth)) && (i < 1000) || i < 10) {
+          while((!(Math.sign(previousR - this.targetObject.distToEarth) == Math.sign(previousR - secondPreviousR)) || (previousR > this.targetObject.distToEarth)) && this.propSuccess == 1 && (i < 1000) || i < 10) {
             this.targetMoon.propagate()
             secondPreviousR = previousR
             previousR = parseFloat(this.targetObject.distToEarth)
             this.targetObject.propagateSOI(this.targetMoon)
-            this.targetObject.orbitUpdate(0, propFidelity)
+            this.propSuccess = parseInt(this.targetObject.orbitUpdate(0, propFidelity))
 
             //FINDING E AND THINGS
             if(i == 1 && stopConditionValue != "CORRECTING_DO_NOT_SUBCALL") {
@@ -117,14 +124,19 @@ class Targeter {
             i += 1
           }
           break
+          //CHANGED
+          this.targetObject.previousObjectState.copy(this.targetObject)
 
         case "theta":
           var i = 0
-          while(abs(this.targetObject.theta - stopConditionValue) > this.tolerance && i < 1000) {
+          while(abs(this.targetObject.theta - stopConditionValue) > this.tolerance && this.propSuccess == 1 && i < 1000) {
             this.propagateStep(i, stopConditionValue, propFidelity)
             i += 1
           }
           break
+    }
+    if(frameCount % 20 == 0) {
+      console.log("Did the propagation fail? " + (!this.propSuccess).toString())
     }
 
     push()
@@ -236,7 +248,7 @@ class Targeter {
       this.updateFunctions()
     }
     if(abs(this.currentFcnValue) < this.tolerance) {
-      console.log("Targeter converged on a burn magnitude of " + this.currentControlValue.toFixed(2))
+      console.log("Targeter converged on a burn magnitude of " + this.currentControlValue.toFixed(5))
       this.targetObject.dvUsed += this.currentControlValue
       this.targetObject.calculateElements()
     }

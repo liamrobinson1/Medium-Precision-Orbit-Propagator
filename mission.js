@@ -22,7 +22,13 @@ class Mission {
         this.propagator.propagate(this.propagator.propFidelity, this.propagator.propStopCondition, this.propagator.propStopValue)
       }
       this.propagator.drawConvergence()
-      this.propagator.targetObject.copy(this.propagator.originalObject)
+      console.log(this.targetObject)
+      if(false) {
+        this.propagator.targetObject.previousObjectState.copy(this.propagator.originalObject)
+      }
+      else {
+        this.propagator.targetObject.copy(this.propagator.originalObject)
+      }
     }
   }
 
@@ -45,7 +51,7 @@ class Mission {
         case "ECCE":
           this.propagator.targetParameter = "ecc"
           this.propagator.equalityCondition = value
-          this.propagator.tolerance = 0.001
+          this.propagator.tolerance = 0.0001
           break
         case "SPFH":
           this.propagator.targetParameter = "h"

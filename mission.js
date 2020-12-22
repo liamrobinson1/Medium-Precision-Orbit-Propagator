@@ -11,20 +11,26 @@ class Mission {
   }
 
   executeSequence(i) {
-    this.propagator = new Targeter(this.targetObject, "noChange", null, 1, "apoapsis", null, "burnV", 0.00, 100, 0.01)
+    this.propagator = new Targeter(this.targetObject, "noChange", null, 1, "apoapsis", null, "burnV", 0.00, 200, 0.01, 5000, 1)
     this.propagator.segmentTimer = new Time(this.targetObject.deltaT)
 
-    this.parseUserMissionPhase(this.sequence[i])
-
-    if(this.sequence[i].includes('Target')) {
-      this.propagator.vary()
+    if(this.sequence[i] != "phase") {
+      this.parseUserMissionPhase(this.sequence[i])
     }
     else {
-      this.propagator.propagate(this.propagator.propFidelity, this.propagator.propStopCondition, this.propagator.propStopValue)
+      this.parseUserMissionPhase("Target PERD = " + (moon.period * (-falcon.moonAngle + 2 * PI + 1) / (2 * PI)).toString() + ", at FREL = 10")
     }
 
+    if(this.sequence[i].includes('Target')) {
+      this.propagator.vary(1, "any", "varying", this.propagator.sensetivity)
+    }
+    else if(this.sequence[i] == "phase") {
+      this.propagator.vary(1, "any", "varying", 14)
+    }
+    else {
+      this.propagator.propagate(this.propagator.propFidelity, this.propagator.propStopCondition, this.propagator.propStopValue, 1, this.initialSOI, null)
+    }
     this.propagator.drawConvergence()
-    // this.propagator.targetObject.copy(this.propagator.originalObject)
 
     return [this.propagator.currentControlValue, this.propagator.segmentTimer.timeSinceCreation]
   }
@@ -43,11 +49,12 @@ class Mission {
         case "PERD":
           this.propagator.targetParameter = "period"
           this.propagator.equalityCondition = value
+          this.propagator.tolerance = 0.01
           break
         case "ECCE":
           this.propagator.targetParameter = "ecc"
           this.propagator.equalityCondition = value
-          this.propagator.tolerance = 0.0001
+          this.propagator.tolerance = 0.00001
           break
         case "SPFH":
           this.propagator.targetParameter = "h"
@@ -81,6 +88,26 @@ class Mission {
           this.propagator.targetParameter = "posMoon"
           this.propagator.equalityCondition = value
           break
+        case "BDTT":
+          this.propagator.targetParameter = "BdotT"
+          this.propagator.equalityCondition = value
+          this.propagator.tolerance = 0.1
+          this.propagator.sensetivity = 14
+          break
+        case "MANG":
+          this.propagator.targetParameter = "moonAngle"
+          this.propagator.equalityCondition = value
+          break
+        case "MPER":
+          this.propagator.targetParameter = "moonPeriapsis"
+          this.propagator.equalityCondition = value
+          break
+        case "MECC":
+          this.propagator.targetParameter = "moonEccentricity"
+          this.propagator.equalityCondition = value
+          this.propagator.tolerance = 0.05 //DEFAULT
+          this.propagator.sensetivity = 3
+          break
       }
 
       switch(directives[1].slice(4, directives[1].length)) {
@@ -90,6 +117,10 @@ class Mission {
           break
         case "periapsis":
           this.propagator.propStopCondition = "periapsis"
+          this.propagator.propStopValue = null
+          break
+        case "moonperiapsis":
+          this.propagator.propStopCondition = "moonperiapsis"
           this.propagator.propStopValue = null
           break
       }
@@ -106,6 +137,11 @@ class Mission {
           break
         case "periapsis":
           this.propagator.propStopCondition = "periapsis"
+          this.propagator.equalityCondition = null
+          this.propagator.propStopValue = null
+          break
+        case "moonperiapsis":
+          this.propagator.propStopCondition = "moonperiapsis"
           this.propagator.equalityCondition = null
           this.propagator.propStopValue = null
           break
@@ -126,12 +162,16 @@ class Mission {
           this.propagator.propStopCondition = "theta"
           this.propagator.propStopValue = value
           break
+        case "MANG":
+          this.propagator.propStopCondition = "moonAngle"
+          this.propagator.propStopValue = value
+          break
       }
     }
-    console.log(this.propagator.targetParameter)
-    console.log(this.propagator.propStopCondition)
-    console.log(this.propagator.propStopValue)
-    console.log(this.propagator.currentControlValue)
-    console.log(this.propagator.equalityCondition)
+    console.log("Targeting: ", this.propagator.targetParameter)
+    console.log("Stopping at: ", this.propagator.propStopCondition)
+    console.log("With value: ", this.propagator.propStopValue)
+    console.log("Starting with ControlVar: ", this.propagator.currentControlValue)
+    console.log("Looking for: ", this.propagator.equalityCondition)
   }
 }

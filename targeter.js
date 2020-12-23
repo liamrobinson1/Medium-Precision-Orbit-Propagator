@@ -35,7 +35,7 @@ class Targeter {
 
     //FINDING E AND THINGS
     if(i == 1 && isCorrecting != "CORRECTING_DO_NOT_SUBCALL") {
-      this.targetObject.correctThetaFindRs(5000)
+      this.targetObject.correctThetaFindRs(2000)
     }
 
     this.targetObject.calculateElements(this.targetMoon)
@@ -76,6 +76,19 @@ class Targeter {
       case "moonAngle":
         var i = 0
         while(abs(this.targetObject.moonAngle - stopConditionValue) > this.tolerance && this.propSuccess == 1 && i < this.propStepLimit) {
+          time.halt = 0
+          this.propagateStep(j, stopConditionValue, propFidelity, propDirection, "moon", isCorrecting)
+          i += 1
+        }
+        //FINDING E AND THINGS
+        if(i == 1 && isCorrecting != "CORRECTING_DO_NOT_SUBCALL") {
+          this.targetObject.correctThetaFindRs(5000)
+        }
+        break
+
+      case "earthPosVelAngle":
+        var i = 0
+        while(abs(this.targetObject.earthPosVelAngle - stopConditionValue) > this.tolerance && this.propSuccess == 1 && i < this.propStepLimit) {
           time.halt = 0
           this.propagateStep(j, stopConditionValue, propFidelity, propDirection, "moon", isCorrecting)
           i += 1
@@ -298,13 +311,19 @@ class Targeter {
         this.currentFcnValue = parseFloat(this.equalityParameter - this.equalityCondition)
         break
 
+      case "earthPosVelAngle":
+        this.equalityParameter = parseFloat(this.earthPosVelAngle)
+        this.previousFcnValue = parseFloat(this.currentFcnValue)
+        this.currentFcnValue = parseFloat(this.equalityParameter - this.equalityCondition)
+        break
+
       case "moonPeriapsis":
         this.equalityParameter = parseFloat(this.targetObject.moonPeriapsis)
         this.previousFcnValue = parseFloat(this.currentFcnValue)
         this.currentFcnValue = parseFloat(this.equalityParameter - this.equalityCondition)
         break
 
-      case "moonPeriapsis":
+      case "moonApoapsis":
         this.equalityParameter = parseFloat(this.targetObject.moonApoapsis)
         this.previousFcnValue = parseFloat(this.currentFcnValue)
         this.currentFcnValue = parseFloat(this.equalityParameter - this.equalityCondition)
@@ -342,6 +361,15 @@ class Targeter {
     this.updateFunctions()
     console.log(this.currentFcnValue.toFixed(2), this.previousFcnValue.toFixed(2), this.previousControlValue.toFixed(2) , this.currentControlValue.toFixed(2))
 
+    if(this.currentFcnValue > this.previousFcnValue && (this.targetParameter == "distToEarth" || this.propStopCondition == "apoapsis" || this.propStopCondition == "periapsis")) {
+      console.log("Trying different direction for correlation...")
+      this.currentControlValue -= 0.08
+      this.originalObject.copy(this.targetObject)
+      this.propagate(this.propFidelity, this.propStopCondition, this.propStopValue, propDirection, initialSOI, isCorrecting)
+      this.updateFunctions()
+      this.previousControlValue = 0.04
+      console.log(this.currentFcnValue.toFixed(2), this.previousFcnValue.toFixed(2), this.previousControlValue.toFixed(2) , this.currentControlValue.toFixed(2))
+    }
 
     while(abs(this.currentFcnValue) > this.tolerance && attempts < this.attemptLimit) {
       attempts += 1

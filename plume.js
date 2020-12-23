@@ -4,8 +4,10 @@ class ExhaustPlume {
     this.particleNum = particleNum
     this.timer = new Time(1, 0)
 
+    console.log("Making a new plume with: ", thrusterPos, sourceVelMag, thrustVector, thrustMag, particleNum)
+
     for(var i = 0; i < this.particleNum; i++) {
-      this.particles[i] = new ExhaustParticle(thrusterPos, sourceVelMag, thrustVector, thrustMag, lifetime)
+      this.particles[i] = new ExhaustParticle(thrusterPos, sourceVelMag, p5.Vector.mult(thrustVector, Math.sign(thrustMag)), abs(thrustMag), lifetime)
     }
   }
 
@@ -31,10 +33,10 @@ class ExhaustPlume {
 class ExhaustParticle {
   constructor(thrusterPos, sourceVelMag, thrustVector, thrustMag, lifetime) {
     var angleRandFactor = 1/7
-    var velRandFactor = 2
+    var velRandFactor = 8
     var colorRandFactor = 50
     this.sourceVelMag = sourceVelMag
-    this.color = color(200 + Math.random() * colorRandFactor, Math.random() * colorRandFactor, 0)
+    this.color = color(200 + Math.random() * colorRandFactor, Math.random() * colorRandFactor * 2, Math.random() * colorRandFactor)
     this.velMag = thrustMag + Math.random() * velRandFactor
     this.thrustMag = thrustMag
     this.thrustVector = createVector(thrustVector.x + Math.random() * angleRandFactor, thrustVector.y + Math.random() * angleRandFactor)

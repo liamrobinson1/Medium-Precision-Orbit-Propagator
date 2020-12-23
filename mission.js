@@ -11,7 +11,7 @@ class Mission {
   }
 
   executeSequence(i) {
-    this.propagator = new Targeter(this.targetObject, "noChange", null, 1, "apoapsis", null, "burnV", 0.00, 100, 0.01, 5000, 1)
+    this.propagator = new Targeter(this.targetObject, "noChange", null, 1, "apoapsis", null, "burnV", 0.00, 100, 0.01, 2000, 1)
     this.propagator.segmentTimer = new Time(this.targetObject.deltaT, 0)
 
     if(this.sequence[i] != "phase") {
@@ -103,14 +103,14 @@ class Mission {
           this.propagator.equalityCondition = value
           break
         case "MAPO":
-          this.propagator.targetParameter = "moonPeriapsis"
+          this.propagator.targetParameter = "moonApoapsis"
           this.propagator.equalityCondition = value
           break
         case "MECC":
           this.propagator.targetParameter = "moonEccentricity"
           this.propagator.equalityCondition = value
           this.propagator.tolerance = 0.05 //DEFAULT
-          this.propagator.sensetivity = 7
+          this.propagator.sensetivity = 3
           break
       }
 
@@ -169,6 +169,11 @@ class Mission {
         case "MANG":
           this.propagator.propStopCondition = "moonAngle"
           this.propagator.propStopValue = value
+          break
+        case "EVPA":
+          this.propagator.propStopCondition = "earthPosVelAngle"
+          this.propagator.propStopValue = value
+          this.propagator.tolerance = 0.05
           break
       }
     }

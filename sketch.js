@@ -29,7 +29,9 @@ let falconMoonTrail = []
 var transferFrame = 4
 
 let missionSequence
-let missionArr = ["Propagate, to FREL = 2", "Propagate, to MANG = 1.2", "Target ECCE = 1.2, at FREL = 3", "Propagate, to moonperiapsis", "Target MECC = 0.18, at FREL = 100", "Propagate, to FREL = 263", "Target ECCM = 4, at FREL = 150", "Target RMAG = 100, at periapsis", "Target ECCE = 0.01, at apoapsis", "Propagate, to FREL = 1200"]
+// let missionArr = ["Propagate, to FREL = 2", "Propagate, to MANG = 1.2", "Target ECCE = 1.32, at FREL = 3", "Propagate, to FREL = 100", "Target MPER = 30, at moonperiapsis", "Target MECC = 0.05, at FREL = 100", "Propagate, to moonperiapsis", "Propagate, to EVPA = -0.4", "Target MECC = 2.2, at FREL = 30", "Propagate, to periapsis", "Target RMAG = 100, at periapsis", "Target ECCE = 0.01, at apoapsis", "Propagate, to FREL = 2"]
+let missionArr = ["Propagate, to FREL = 2", "Propagate, to MANG = 1.2", "Target ECCE = 1.32, at FREL = 50", "Propagate, to FREL = 100", "Target MPER = 30, at moonperiapsis", "Target MECC = 0.4, at FREL = 100", "Propagate, to EVPA = 0", "Target MECC = 1, at periapsis", "Target RMAG = 100, at periapsis", "Target ECCE = 0.01, at FREL = 40"]
+// let missionArr = ["Propagate, to EVPA = -1"]
 
 let satImage
 let moonImage
@@ -98,7 +100,7 @@ function draw() {
         missionSequence.burnMagnitude = results[0]
         missionSequence.framesToWait = results[1]
         falcon.executeManeuver(missionSequence.burnMagnitude)
-        plume = new ExhaustPlume(falcon.pos, falcon.vel.mag(), p5.Vector.mult(falcon.vel, -1), missionSequence.burnMagnitude * 10, 40 + missionSequence.burnMagnitude * 10, 50)
+        plume = new ExhaustPlume(falcon.pos, falcon.vel.mag(), p5.Vector.mult(falcon.vel, -1), missionSequence.burnMagnitude * 10, 40 + abs(missionSequence.burnMagnitude) * 10, 50)
         falcon.correctThetaFindRs(5000)
         falcon.calculateElements(moon)
         falcon.stillInOnePiece = falcon.orbitUpdate(time.halt, 1, moon, 1)
@@ -162,7 +164,7 @@ function draw() {
     }
   }
 
-  if(falcon.stillInOnePiece == 1) {
+  if(falcon.stillInOnePiece == 1 && time.halt == 0) {
     // falcon.displayFutureTrajectory(500)
     falconTrail.push([falcon.pos.x, falcon.pos.y])
     falconMoonTrail.push([moon.pos.x - falcon.pos.x, moon.pos.y - falcon.pos.y])
@@ -173,18 +175,9 @@ function draw() {
     plume.update()
   }
   plume.show()
+  falcon.showTrail()
 
-  noFill()
-  push()
-  beginShape()
-  stroke(0, 255, 255)
-  for(var i = 0; i < falconTrail.length; i++) {
-    vertex(falconTrail[i][0], falconTrail[i][1])
-  }
-  endShape()
-  pop()
-
-  moonRelativeOrbit()
+  // moonRelativeOrbit()
   addImages()
 
   if(falcon.missionSegment == missionSequence.sequence.length) {

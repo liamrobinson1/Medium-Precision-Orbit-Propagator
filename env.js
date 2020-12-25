@@ -28,9 +28,16 @@ class Moon {
   }
 
   show() {
-    noStroke()
-    fill(23, 107, 61)
-    ellipse(this.pos.x, this.pos.y, 2 * this.drawRadius)
+    push()
+    translate(this.pos.x, this.pos.y, this.pos.z)
+    texture(moonTex)
+    sphere(this.drawRadius, 100)
+    pop()
+    push()
+    stroke(255)
+    noFill()
+    circle(0, 0, 2 * this.r, 100)
+    pop()
   }
 
   drawSOI() {
@@ -38,11 +45,13 @@ class Moon {
       push()
       strokeWeight(1)
       noStroke()
-      fill(30)
-      ellipse(this.pos.x, this.pos.y, this.SOIrad * 2)
-      stroke(51)
+      fill(255)
+      push()
+      translate(this.pos.x, this.pos.y)
+      // ellipse(0, 0, this.SOIrad * 2, this.SOIrad * 2)
+      pop()
+      stroke(255)
       noFill()
-      ellipse(w / 2, h / 2, 2 * this.r)
       pop()
     }
   }
@@ -52,14 +61,17 @@ class Earth {
   constructor(bodyMass, bodyPosxi, bodyPosyi, drawRadius) {
     this.mass = bodyMass
     this.mu = bodyMass * G
-    this.pos = createVector(bodyPosxi, bodyPosyi)
+    this.pos = createVector(bodyPosxi, bodyPosyi, 0)
     this.drawRadius = drawRadius
+    this.vel = createVector(0, 0, 0)
   }
 
   show() {
-    noStroke()
-    fill(23, 107, 61)
-    ellipse(this.pos.x, this.pos.y, 2 * this.drawRadius)
+    push()
+    translate(this.pos.x, this.pos.y, this.pos.z)
+    texture(earthTex)
+    sphere(this.drawRadius, 100)
+    pop()
   }
 }
 
@@ -86,27 +98,6 @@ class Time {
       this.halt = 0
     }
   }
-}
-
-function addImages() {
-  push()
-  translate(earth.pos.x, earth.pos.y)
-  rotate(time.timeSinceCreation * 0.002)
-  image(earthImage, -earth.drawRadius - 1, -earth.drawRadius - 1)
-  pop()
-
-  push()
-  translate(moon.pos.x, moon.pos.y)
-  rotate(moon.theta)
-  image(moonImage, -moon.drawRadius - 1, -moon.drawRadius - 1)
-  pop()
-}
-
-function resizeImages() {
-  satImage.resize(60, 60)
-  earthImage.resize(earth.drawRadius * 2 + 2, earth.drawRadius * 2 + 2)
-  moonImage.resize(moon.drawRadius * 2 + 2, moon.drawRadius * 2 + 2)
-  scaledMoon.resize(moon.drawRadius * 2 / 3 + 2, moon.drawRadius * 2 / 3 + 2)
 }
 
 function moonRelativeOrbit() {

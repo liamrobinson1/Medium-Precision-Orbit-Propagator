@@ -24,21 +24,14 @@ function interpolate(t, out, res) {
       }
     }
   }
-  if(cond) {
-    console.log("WHAT THE FUCK", iys)
-  }
   return [its, iys]
 }
 
 function computeInterp(t, out, res) {
   var interpolatedFcns = []
-  console.log(t.length, out[0])
   for(var i = 0; i < t.length - 3; i++) {
     var yinterp = pieceMealIntep(t[i], out[i], t[i+1], out[i+1], t[i+2], out[i+2], t[i+3], out[i+3])
     interpolatedFcns.push(yinterp)
-  }
-  if(out[0] < 0) {
-    console.log(interpolatedFcns)
   }
   return interpolatedFcns
 }

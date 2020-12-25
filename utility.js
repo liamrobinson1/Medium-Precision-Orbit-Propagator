@@ -50,3 +50,15 @@ function revArr(arr) {
   }
   return newArray;
 }
+
+function showVertexPath(x, y, z, col) {
+  push()
+  noFill()
+  beginShape()
+  stroke(col)
+  for(var i = 0; i < x.length; i++) {
+    vertex(x[i], y[i], z[i])
+  }
+  endShape()
+  pop()
+}

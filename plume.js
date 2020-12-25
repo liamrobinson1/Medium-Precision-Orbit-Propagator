@@ -4,7 +4,7 @@ class ExhaustPlume {
     this.particleNum = particleNum
     this.timer = new Time(1, 0)
 
-    console.log("Making a new plume with: ", thrusterPos, sourceVelMag, thrustVector, thrustMag, particleNum)
+    // console.log("Making a new plume with: ", thrusterPos, sourceVelMag, thrustVector, thrustMag, particleNum)
 
     for(var i = 0; i < this.particleNum; i++) {
       this.particles[i] = new ExhaustParticle(thrusterPos, sourceVelMag, p5.Vector.mult(thrustVector, Math.sign(thrustMag)), abs(thrustMag), lifetime)

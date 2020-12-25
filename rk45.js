@@ -118,6 +118,7 @@ class RungeKutta45 {
     this.optStep = min([hk, hl, hm, hn, ho, hp])
     this.currentState = [y[0], y[1], y[2], y[3], y[4], y[5]]
     this.h = this.optStep
+    this.h = 1
   }
 
   dot(i, y0, y1, y2, y3, y4, y5) {

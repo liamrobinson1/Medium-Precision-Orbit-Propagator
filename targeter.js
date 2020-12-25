@@ -1,6 +1,6 @@
 class Targeter {
   constructor(targetObject, targetParameter, targetValue, propFidelity, propStopCondition, propStopValue, controlVariable, userGuess, attemptLimit, tolerance, propStepLimit, sensetivity) {
-    let tempSat = new GravSat(targetObject.distToEarth, 0, satMass, 0)
+    let tempSat = new GravSat(targetObject.distToEarth, 0, satMass)
     let tempMoon = new Moon(parseFloat(moon.mass), parseFloat(moon.r), earth, parseFloat(moon.theta), moon.drawRadius)
     targetObject.copy(tempSat)
     this.originalObject = targetObject
@@ -28,9 +28,9 @@ class Targeter {
     this.propStepLimit = propStepLimit
   }
 
-  propagateStep(i, stopConditionValue, propFidelity, propDirection, initialSOI, isCorrecting) {
+  propagateStep(i, stopConditionValue, propFidelity, propDirection, initialSOI) {
     this.targetMoon.propagate(propDirection, this.targetObject)
-    this.targetObject.propagateSOI(this.targetMoon, 1, isCorrecting, initialSOI)
+    this.targetObject.propagateSOI(this.targetMoon, 1, initialSOI)
     this.propSuccess = parseInt(this.targetObject.orbitUpdate(0, propFidelity, this.targetMoon, propDirection))
 
     //FINDING E AND THINGS
@@ -38,7 +38,7 @@ class Targeter {
       this.targetObject.correctThetaFindRs(2000)
     }
 
-    this.targetObject.calculateElements(this.targetMoon)
+    this.targetObject.calculateElements(earth)
     this.propTrail.push([this.targetObject.pos.x, this.targetObject.pos.y])
   }
 
@@ -56,7 +56,7 @@ class Targeter {
       case "framesElapsed":
         for(var j = 0; j < stopConditionValue; j++) {
           if(this.propSuccess == 1) {
-            this.propagateStep(j, stopConditionValue, propFidelity, propDirection, "any", isCorrecting)
+            this.propagateStep(j, stopConditionValue, propFidelity, propDirection, "any")
           }
         }
         //FINDING E AND THINGS
@@ -69,7 +69,7 @@ class Targeter {
         for(var j = 0; j < stopConditionValue; j++) {
           time.halt = 0
           if(this.propSuccess == 1) {
-            this.propagateStep(j, stopConditionValue, propFidelity, propDirection, "moon", isCorrecting)
+            this.propagateStep(j, stopConditionValue, propFidelity, propDirection, "moon")
           }
         }
         break
@@ -78,7 +78,7 @@ class Targeter {
         var i = 0
         while(abs(this.targetObject.moonAngle - stopConditionValue) > this.tolerance && this.propSuccess == 1 && i < this.propStepLimit) {
           time.halt = 0
-          this.propagateStep(j, stopConditionValue, propFidelity, propDirection, "moon", isCorrecting)
+          this.propagateStep(j, stopConditionValue, propFidelity, propDirection, "moon")
           i += 1
         }
         //FINDING E AND THINGS
@@ -91,7 +91,7 @@ class Targeter {
         var i = 0
         while(abs(this.targetObject.earthPosVelAngle - stopConditionValue) > this.tolerance && this.propSuccess == 1 && i < this.propStepLimit) {
           time.halt = 0
-          this.propagateStep(j, stopConditionValue, propFidelity, propDirection, "moon", isCorrecting)
+          this.propagateStep(j, stopConditionValue, propFidelity, propDirection, "moon")
           i += 1
         }
         //FINDING E AND THINGS
@@ -110,7 +110,7 @@ class Targeter {
           this.targetMoon.propagate(propDirection, this.targetObject)
           secondPreviousR = previousR
           previousR = parseFloat(this.targetObject.distToEarth)
-          this.targetObject.propagateSOI(this.targetMoon, 1, isCorrecting, initialSOI)
+          this.targetObject.propagateSOI(this.targetMoon, 1, initialSOI)
           this.propSuccess = parseInt(this.targetObject.orbitUpdate(0, propFidelity, this.targetMoon, propDirection))
 
           //FINDING E AND THINGS
@@ -118,7 +118,7 @@ class Targeter {
             this.targetObject.correctThetaFindRs(5000)
           }
 
-          this.targetObject.calculateElements(this.targetMoon)
+          this.targetObject.calculateElements(earth)
           this.propTrail.push([this.targetObject.pos.x, this.targetObject.pos.y])
           i += 1
           if(secondPreviousR < previousR && fixed == 0) {
@@ -144,7 +144,7 @@ class Targeter {
           this.targetMoon.propagate(propDirection, this.targetObject)
           secondPreviousR = previousR
           previousR = parseFloat(this.targetObject.distToEarth)
-          this.targetObject.propagateSOI(this.targetMoon, 1, isCorrecting, initialSOI)
+          this.targetObject.propagateSOI(this.targetMoon, 1, initialSOI)
           this.propSuccess = parseInt(this.targetObject.orbitUpdate(0, propFidelity, this.targetMoon, propDirection))
 
           //FINDING E AND THINGS
@@ -152,7 +152,7 @@ class Targeter {
             this.targetObject.correctThetaFindRs(5000)
           }
 
-          this.targetObject.calculateElements(this.targetMoon)
+          this.targetObject.calculateElements(earth)
           this.propTrail.push([this.targetObject.pos.x, this.targetObject.pos.y])
           i += 1
         }
@@ -170,7 +170,7 @@ class Targeter {
           this.targetMoon.propagate(propDirection, this.targetObject)
           secondPreviousR = previousR
           previousR = parseFloat(this.targetObject.distToMoon)
-          this.targetObject.propagateSOI(this.targetMoon, 1, isCorrecting, "moon")
+          this.targetObject.propagateSOI(this.targetMoon, 1, "moon")
           this.propSuccess = parseInt(this.targetObject.orbitUpdate(0, propFidelity, this.targetMoon, propDirection))
 
           //FINDING E AND THINGS
@@ -178,7 +178,7 @@ class Targeter {
             this.targetObject.correctThetaFindRs(5000)
           }
 
-          this.targetObject.calculateElements(this.targetMoon)
+          this.targetObject.calculateElements(earth)
           this.propTrail.push([this.targetObject.pos.x, this.targetObject.pos.y])
           i += 1
         }
@@ -187,7 +187,7 @@ class Targeter {
       case "theta":
         var i = 0
         while(abs(this.targetObject.theta - stopConditionValue) > this.tolerance && this.propSuccess == 1 && i < this.propStepLimit) {
-          this.propagateStep(i, stopConditionValue, propFidelity, propDirection, initialSOI, isCorrecting)
+          this.propagateStep(i, stopConditionValue, propFidelity, propDirection, initialSOI)
           i += 1
         }
         //FINDING E AND THINGS
@@ -401,7 +401,7 @@ class Targeter {
     if(abs(this.currentFcnValue) < this.tolerance && this.propSuccess == 1) {
       console.log("Targeter converged on a burn magnitude of " + this.currentControlValue.toFixed(5))
       this.targetObject.dvUsed += this.currentControlValue
-      this.targetObject.calculateElements(this.targetMoon)
+      this.targetObject.calculateElements(earth)
     }
     else {
       console.log(abs(this.currentFcnValue),  this.tolerance, this.equalityParameter, this.equalityCondition)

@@ -43,6 +43,7 @@ class Targeter {
   }
 
   propagate(propFidelity, stopCondition, stopConditionValue, propDirection, initialSOI, isCorrecting) {
+    tic("propagation time")
     // console.log(this.propStepLimit + " PROP STEP LIMIT USED, LOOKING FOR " + stopCondition + " with value " + stopConditionValue, propDirection, initialSOI, isCorrecting)
     this.targetMoon = new Moon(parseFloat(moon.mass), parseFloat(moon.r), earth, parseFloat(moon.theta), moon.drawRadius)
     this.propTrail = []
@@ -210,6 +211,7 @@ class Targeter {
       endShape()
       pop()
     }
+    toc("propagation time")
   }
 
   drawConvergence() {

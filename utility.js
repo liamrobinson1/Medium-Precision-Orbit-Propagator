@@ -51,14 +51,103 @@ function revArr(arr) {
   return newArray;
 }
 
-function showVertexPath(x, y, z, col) {
+function showVertexPath(refbody, x, y, z, col) {
   push()
   noFill()
   beginShape()
   stroke(col)
+  strokeWeight(1)
+  translate(refbody.pos.x, refbody.pos.y, refbody.pos.z)
   for(var i = 0; i < x.length; i++) {
-    vertex(x[i], y[i], z[i])
+    vertex(x[i] / SF, y[i] / SF, z[i] / SF)
   }
   endShape()
   pop()
+}
+
+function calculateElements(state, body, requestedElement) { //CALCULATES KEPLERIAN ELEMENTS WITH RESPECT TO A BODY
+  var mu = G * body.mass
+
+  var rBody = createVector(state[0] - body.pos.x, state[1] - body.pos.y, state[2] - body.pos.z)
+  var vBody = createVector(state[3] - body.vel.x, state[4] - body.vel.y, state[5] - body.vel.z)
+
+  var rBodyHat = p5.Vector.div(rBody, rBody.mag())
+  var vBodyHat = p5.Vector.div(vBody, vBody.mag())
+
+  rmag = rBody.mag()
+  var vmag = vBody.mag()
+
+  var vectorToBody = p5.Vector.mult(rBody, -1)
+
+  var bodyPosVelAngle = vBody.angleBetween(vectorToBody)
+
+  var hVector = p5.Vector.cross(rBody, vBody)
+  var h = hVector.mag()
+
+  var orbitNormal = p5.Vector.div(hVector, h)
+
+  var orbitBinormal = p5.Vector.cross(vBodyHat, orbitNormal)
+
+  var a = 1 / (2 / rmag - vmag ** 2 / mu)
+  var period = 2 * PI * ((a) ** 3 / mu) ** 0.5
+  var p = h ** 2 / mu
+  var e = -mu / (2 * a)
+  var ecc = (1 + 2 * e * h ** 2 / mu ** 2) ** 0.5
+  var eccVector = p5.Vector.cross(vBody, hVector).div(mu).sub(rBodyHat)
+
+  var apoapsis = a * (1 + ecc)
+  var periapsis = a * (1 - ecc)
+
+  var gamma = acos(h / (rmag * vmag))
+
+  if(p5.Vector.dot(rBody, vBody) > 0) {
+    theta = acos((p / rmag - 1) / ecc)
+  }
+  else {
+    theta = 2 * PI - acos((p / rmag - 1) / ecc)
+  }
+
+  if(ecc > 1) {
+    hyperbolicElements(ecc, eccVector, orbitNormal, a)
+  }
+
+  switch(requestedElement) {
+    case "theta":
+      return theta
+    case "bodyAngle":
+      console.log("returning bodyangle")
+      return bodyPosVelAngle
+  }
+}
+
+function hyperbolicElements(ecc, eccVector, orbitNormal, a) {
+  var betaAngle = acos(1 / ecc)
+
+  var s1 = p5.Vector.mult(eccVector, cos(betaAngle))
+  var s2 = p5.Vector.mult(p5.Vector.cross(orbitNormal, eccVector), sin(betaAngle))
+
+  var S = p5.Vector.add(s1, s2)
+
+  var t1 = p5.Vector.cross(S, orbitNormal)
+
+  var T = p5.Vector.div(t1, t1.mag())
+  var R = p5.Vector.cross(S, T)
+
+  var b1 = abs(a) * (ecc ** 2 - 1) ** 0.5
+  var b2 = p5.Vector.cross(S, orbitNormal)
+
+  var B = p5.Vector.mult(b2, b1)
+
+  var BdotR = p5.Vector.dot(B, R)
+  var BdotT = p5.Vector.dot(B, T)
+}
+
+function mouseWheel(event) {
+  scrollActivity = 1
+}
+
+function clif(str, vari) {
+  if(frameCount % 100 == 0) {
+    console.log(str, vari)
+  }
 }

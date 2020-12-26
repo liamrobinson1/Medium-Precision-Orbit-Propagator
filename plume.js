@@ -44,11 +44,11 @@ class ExhaustParticle {
     this.lifetime = lifetime + Math.sign(Math.random() - 0.5) * Math.random() * lifetime / 2
 
     this.sourceVel = p5.Vector.div(this.thrustVector, this.thrustVector.mag()).mult(this.sourceVelMag)
-    this.pos = createVector(thrusterPos.x, thrusterPos.y)
+    this.pos = createVector(thrusterPos.x, thrusterPos.y, thrusterPos.z)
   }
 
   update() {
-    this.pos = createVector(this.pos.x + this.vel.x + this.sourceVel.x, this.pos.y + this.vel.y + this.sourceVel.y)
+    this.pos = createVector(this.pos.x + this.vel.x + this.sourceVel.x, this.pos.y + this.vel.y + this.sourceVel.y, this.pos.z + this.vel.z + this.sourceVel.z)
   }
 
   show() {

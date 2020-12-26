@@ -1,34 +1,35 @@
 var w = 0
 var h = 0
 
-const G = 100
+const G = 6.6743 * 10 ** -20
+const SF = 100
 
 let time
 var deltaT = 1
 var timeStop = 0
-let clog
+var scrollActivity = 0
 
 var satMass = 3
 var satOrbitalRadius = 100
 var satAngle = -2
 
 let earth
-var earthMass = 40
-var earthDrawRadius = 40
+var earthMass = 5.97219 * 10 ** 24
+var earthEqRadius = 6378.1370
+var earthPolRadius = 6356.7523142
+var earthOmega = 7.2921150 * 10 ** -5
 
 const mu = G * earthMass
 
 let moon
 let tempMoon
 var moonAngle = 0
-var moonOrbitRadius = 400
-var moonDrawRadius = 10
-var moonMass = 15
+var moonOrbitRadius = 357000
+var moonDrawRadius = 1737.1 / SF
+var moonMass = 7.348 * 10 ** 22
 
-let falcon
-let falconcopy
-let falconTrail = [[], [], []]
-let falconMoonTrail = []
+let sat
+let satTrail = [[], [], []]
 var transferFrame = 4
 
 let missionSequence
@@ -40,41 +41,55 @@ let missionArr = []
 let earthTex
 let moonTex
 
+let earthCam
+let satCam
+let moonCam
+let currentCam
+
 let myFont
 
 let plume
 
+function suc() {
+  console.log("success")
+}
+
+function bad() {
+  console.log("bad")
+}
+
 function preload() {
   myFont = loadFont('assets/SourceSansPro-Regular.otf')
-  earthTex = loadImage('assets/earthmap4k.jpg')
+  earthTex = loadImage('assets/earthmap1k.jpg')
   moonTex = loadImage('assets/moonmap1k.jpg')
 }
 
 function setup() {
   frameRate(60)
-
   createCanvas(windowWidth, windowHeight, WEBGL)
+  cameraSetup()
+  perspective(100, 0, 0.0, 500)
+
   w = windowWidth
   h = windowHeight
-  earth = new Earth(earthMass, 0, 0, earthDrawRadius)
+  earth = new Earth(earthMass, 0, 0, earthEqRadius, earthPolRadius, earthOmega)
   moon = new Moon(moonMass, moonOrbitRadius, earth, 0, moonDrawRadius)
-  falcon = new GravSat(satOrbitalRadius, satAngle, satMass)
-  falconcopy = new GravSat(satOrbitalRadius, satAngle, satMass)
-  falcon.missionAnimTimer = new Time(falcon.deltaT, 0)
+  sat = new GravSat(satOrbitalRadius, satAngle, satMass)
+  sat.missionAnimTimer = new Time(sat.deltaT, 0)
 
-  falcon.copy(falconcopy)
-  // missionSequence = new Mission(["Propagate, to FREL = 2", "Propagate, to MANG = 1.5", "Target MECC = 0.70, at moonperiapsis", "Target MECC = 0.18, at FREL = 3", "Propagate, to moonperiapsis", "Target MECC = 0.01, at FREL = 3"], falcon)
-  missionSequence = new Mission(missionArr, falcon)
-  // missionSequence = new Mission([], falcon)
-  plume = new ExhaustPlume(falcon.pos, falcon.vel.mag(), falcon.vel, 20, 0, 0)
+  // missionSequence = new Mission(["Propagate, to FREL = 2", "Propagate, to MANG = 1.5", "Target MECC = 0.70, at moonperiapsis", "Target MECC = 0.18, at FREL = 3", "Propagate, to moonperiapsis", "Target MECC = 0.01, at FREL = 3"], sat)
+  missionSequence = new Mission(missionArr, sat)
+  // missionSequence = new Mission([], sat)
+  plume = new ExhaustPlume(sat.pos, sat.vel.mag(), sat.vel, 20, 0, 0)
 
   time = new Time(deltaT, 1)
 }
 
 function draw() {
   //ORBIT CONTROL
-  orbitControl()
-  clog = frameCount % 100 == 0
+  orbitControl(1, 1, 0.02)
+  cameraControl()
+  scrollActivity = 0
 
   //TIME UPDATE
   time.update()
@@ -82,101 +97,49 @@ function draw() {
   //UPDATE AND DRAW PLANETS AND MOONS
   earth.show()
   moon.show()
-  moon.drawSOI()
   moon.update()
 
-
   //UPDATE AND SHOW THE SAT
-  falcon.showSat()
-  falcon.checkSOI(1)
+  sat.displayElements()
+  sat.standardTimestep()
 
-  if(falcon.stillInOnePiece == 1 && time.currentFrame < transferFrame) {
-    falcon.stillInOnePiece = falcon.orbitUpdate(time.halt, 1, moon, 1)
-  }
-
-  if(time.currentFrame >= transferFrame && falcon.haltPropagation == 0 && !time.halt) {
-    if(falcon.missionSegment == 0 && falcon.missionAnimTimer.timeSinceCreation == 0) {
-      missionSequence.printSequence()
+  if(sat.stillInOnePiece == 1) {
+    if(keyIsDown(190) && time.halt == 0) {
+      sat.executeManeuver("V", 0.036)
+      time.keyPressedLastFrame = 1
+      time.burnMagnitude += 1
     }
-    if(falcon.missionSegment < missionSequence.sequence.length) {
-      if(falcon.missionAnimTimer.timeSinceCreation == 0) {
-        var results = missionSequence.executeSequence(falcon.missionSegment)
-        missionSequence.burnMagnitude = results[0]
-        missionSequence.framesToWait = results[1]
-        falcon.executeManeuver("V", missionSequence.burnMagnitude)
-        plume = new ExhaustPlume(falcon.pos, falcon.vel.mag(), p5.Vector.mult(falcon.vel, -1), missionSequence.burnMagnitude * 10, 40 + abs(missionSequence.burnMagnitude) * 10, 50)
-        falcon.calculateElements(earth)
-        falcon.stillInOnePiece = falcon.orbitUpdate(time.halt, 1, moon, 1)
 
-        falcon.showSat()
-
-        missionSequence.propagator.drawConvergence()
-        falcon.missionAnimTimer.timeSinceCreation += 1
-      }
-      //IF WE"RE IN THE MIDDLE OF A SEGMENT
-      else if(falcon.missionAnimTimer.timeSinceCreation < missionSequence.framesToWait && falcon.stillInOnePiece == 1) {
-        falcon.standardTimestep()
-        if(falcon.missionAnimTimer.timeSinceCreation == 2) {
-        }
-        falcon.missionAnimTimer.timeSinceCreation += 1
-      }
-      //IF WE"VE COMPLETED THE CURRENT SEGMENT
-      else if(falcon.missionAnimTimer.timeSinceCreation == missionSequence.framesToWait) {
-        falcon.missionAnimTimer.timeSinceCreation = 0
-        falcon.missionSegment += 1
-        console.log("Moving on!")
-      }
+    if(keyIsDown(188) && time.halt == 0) {
+      sat.executeManeuver("V", -0.036)
+      time.keyPressedLastFrame = 1
+      time.burnMagnitude -= 1
     }
-    else if(falcon.stillInOnePiece) {
-      falcon.transferComplete = 1
-      falcon.standardTimestep()
 
-      if(keyIsDown(190)) {
-        falcon.executeManeuver("V", 0.036)
-        time.keyPressedLastFrame = 1
-        time.burnMagnitude += 1
-      }
-
-      if(keyIsDown(188)) {
-        falcon.executeManeuver("V", -0.036)
-        time.keyPressedLastFrame = 1
-        time.burnMagnitude -= 1
-      }
-
-      if(keyIsDown(ESCAPE)) {
-        time.halt = 1
-      }
-
-      if(!keyIsDown(190) && !keyIsDown(190) && time.keyPressedLastFrame == 1) {
-        plume = new ExhaustPlume(falcon.pos, falcon.vel.mag(), p5.Vector.mult(falcon.vel, -1), time.burnMagnitude / 3, 40 + time.burnMagnitude, 50)
-        time.keyPressedLastFrame = 0
-        time.burnMagnitude = 0
-      }
+    if(keyIsDown(ESCAPE)) {
+      time.halt = 1
     }
-    else {
-      falcon.showSat()
+
+    if(!keyIsDown(190) && !keyIsDown(190) && time.keyPressedLastFrame == 1) {
+      plume = new ExhaustPlume(sat.pos, sat.vel.mag(), p5.Vector.mult(sat.vel, -1), time.burnMagnitude / 3, 40 + time.burnMagnitude, 50)
+      time.keyPressedLastFrame = 0
+      time.burnMagnitude = 0
     }
   }
 
-  if(falcon.stillInOnePiece == 1 && time.halt == 0) {
-    falcon.displayFutureTrajectory(500)
-
-    falconTrail[0].push(falcon.pos.x)
-    falconTrail[1].push(falcon.pos.y)
-    falconTrail[2].push(falcon.pos.z)
+  if(sat.stillInOnePiece == 1 && time.halt == 0 && time.timeSinceCreation % 10 == 0) {
+    satTrail[0].push(sat.pos.x)
+    satTrail[1].push(sat.pos.y)
+    satTrail[2].push(sat.pos.z)
   }
 
   if(time.halt == 0) {
     plume.update()
   }
+
   plume.show()
-  falcon.showTrail()
-
-  // moonRelativeOrbit()
-
-  if(falcon.missionSegment == missionSequence.sequence.length) {
-    falcon.missionAnimTimer.timeSinceCreation = 0
-    falcon.missionSegment = 0
-    falcon.transferComplete = 0
-  }
+  sat.displayFutureTrajectory(2000, earth)
+  // sat.displayFutureTrajectory(sat.period / 2, moon)
+  sat.saveGroundTrack(earth)
+  sat.showGroundTrack()
 }

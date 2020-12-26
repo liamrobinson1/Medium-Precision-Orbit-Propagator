@@ -5,19 +5,16 @@ class Moon {
     this.r = orbitRad
     this.theta = thetaNaught
     this.thetaDot = -((G * earthMass / this.r) ** 0.5) / this.r * deltaT
-    this.pos = createVector(0, 0)
-    // this.SOIrad = this.r * (2 * this.mass / (5 * earth.mass)) ** 0.5
-    this.SOIrad = 100
+    this.pos = createVector(0, 0, 0)
     this.period = -2 * PI / this.thetaDot
     this.drawRadius = drawRadius
-    this.inertialViewPos = createVector(7 / 8 * w, 7 * h / 8)
   }
 
   update() {
     if(time.halt == 0) {
       this.theta += this.thetaDot
-      this.pos = createVector(this.r * cos(this.theta) + earth.pos.x, this.r * sin(this.theta) + earth.pos.y)
-      this.vel = createVector(-this.thetaDot * this.r * sin(this.theta), this.thetaDot * this.r * cos(this.theta))
+      this.pos = createVector(this.r * sin(this.theta) + earth.pos.y, 0, this.r * cos(this.theta) + earth.pos.x)
+      this.vel = createVector(this.thetaDot * this.r * cos(this.theta), 0, -this.thetaDot * this.r * sin(this.theta))
     }
   }
 
@@ -29,48 +26,38 @@ class Moon {
 
   show() {
     push()
-    translate(this.pos.x, this.pos.y, this.pos.z)
+    translate(this.pos.x / SF, this.pos.y / SF, this.pos.z / SF)
     texture(moonTex)
     sphere(this.drawRadius, 100)
     pop()
     push()
-    stroke(255)
+    stroke(0, 255, 0)
     noFill()
-    circle(0, 0, 2 * this.r, 100)
+    rotateX(PI / 2)
+    ellipse(0, 0, 2 * this.r / SF, 2 * this.r / SF, 24)
     pop()
-  }
-
-  drawSOI() {
-    if(time.halt == 0) {
-      push()
-      strokeWeight(1)
-      noStroke()
-      fill(255)
-      push()
-      translate(this.pos.x, this.pos.y)
-      // ellipse(0, 0, this.SOIrad * 2, this.SOIrad * 2)
-      pop()
-      stroke(255)
-      noFill()
-      pop()
-    }
   }
 }
 
 class Earth {
-  constructor(bodyMass, bodyPosxi, bodyPosyi, drawRadius) {
+  constructor(bodyMass, bodyPosxi, bodyPosyi, eqRad, polRad, omega) {
     this.mass = bodyMass
     this.mu = bodyMass * G
     this.pos = createVector(bodyPosxi, bodyPosyi, 0)
-    this.drawRadius = drawRadius
+    this.eqRad = eqRad
+    this.polRad = polRad
     this.vel = createVector(0, 0, 0)
+    this.omega = omega
   }
 
   show() {
+    this.rotation = this.omega * time.timeSinceCreation
     push()
+    noStroke()
     translate(this.pos.x, this.pos.y, this.pos.z)
+    rotateY(this.rotation)
     texture(earthTex)
-    sphere(this.drawRadius, 100)
+    ellipsoid(this.eqRad / SF, this.polRad / SF, this.eqRad / SF, 100, 100)
     pop()
   }
 }
@@ -100,27 +87,30 @@ class Time {
   }
 }
 
-function moonRelativeOrbit() {
-  var trailLength = falconMoonTrail.length
-  push()
-  translate(moon.inertialViewPos.x, moon.inertialViewPos.y)
-  beginShape()
-  stroke(200, 0, 200)
-  for(var i = 0; i < trailLength; i++) {
-    vertex(-falconMoonTrail[i][0] / 3, -falconMoonTrail[i][1] / 3)
+function cameraSetup() {
+  // frustum([left], [right], [bottom], [top], [near], [far])
+  earthCam = createCamera()
+  satCam = createCamera()
+  moonCam = createCamera()
+  currentCam = "earth"
+}
+
+function cameraControl() {
+  if(keyIsDown(83) || currentCam == "sat") {
+    satCam.lookAt(sat.pos.x / SF, sat.pos.y / SF, sat.pos.z / SF)
+    satCam.setPosition(sat.orbitBinormal.x * 1000, sat.orbitBinormal.y * 1000, sat.orbitBinormal.z * 1000)
+    setCamera(satCam)
+    currentCam = "sat"
   }
-  endShape()
-  stroke(255, 0, 0)
-  strokeWeight(3)
-  point(0, 0)
-
-  stroke(200, 0, 200)
-  fill(200, 0, 200)
-  ellipse(-falconMoonTrail[trailLength - 1][0] / 3, -falconMoonTrail[trailLength - 1][1] / 3, satMass)
-  pop()
-
-  push()
-  translate(moon.inertialViewPos.x - moon.drawRadius / 2, moon.inertialViewPos.y -  moon.drawRadius / 2)
-  image(scaledMoon, 0, 0)
-  pop()
+  if(keyIsDown(69) || currentCam == "earth") {
+    earthCam.lookAt(0, 0, 0)
+    setCamera(earthCam)
+    currentCam = "earth"
+  }
+  if(keyIsDown(77) || currentCam == "moon") {
+    moonCam.lookAt(moon.pos.x / SF, moon.pos.y / SF, moon.pos.z / SF)
+    satCam.setPosition(moon.pos.x / SF, moon.pos.y / SF, moon.pos.z / SF)
+    setCamera(moonCam)
+    currentCam = "moon"
+  }
 }

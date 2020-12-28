@@ -175,8 +175,19 @@ class GravSat { //[1867.27869, -5349.42646, 3744.90429, 8.292274371, -0.82093685
       this.groundTrack[2].push(pt.z)
     }
     for(var i = 0; i < this.groundTrack[0].length; i++) {
-      this.groundTrack[0][i] = this.groundTrack[0][i] * Math.cos(earth.omega) + this.groundTrack[2][i] * Math.sin(earth.omega)
-      this.groundTrack[2][i] = -this.groundTrack[0][i] * Math.sin(earth.omega) + this.groundTrack[2][i] * Math.cos(earth.omega)
+      var why = new THREE.Vector3(this.groundTrack[0][i], this.groundTrack[1][i], this.groundTrack[2][i])
+
+      why.applyMatrix3(earth.toEq)
+
+      why.x = why.x * Math.cos(earth.omega * time.delta) + why.z * Math.sin(earth.omega * time.delta)
+      why.z = -why.x * Math.sin(earth.omega * time.delta) + why.z * Math.cos(earth.omega * time.delta)
+
+      why.applyMatrix3(earth.toEc)
+
+      why.setLength(earth.eqRad + 70)
+      this.groundTrack[0][i] = why.x
+      this.groundTrack[1][i] = why.y
+      this.groundTrack[2][i] = why.z
     }
   }
 

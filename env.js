@@ -53,6 +53,10 @@ class Earth {
     this.vel = new THREE.Vector3(0, 0, 0)
     this.omega = omega
     this.axisTilt = axisTilt
+    this.toEc = new THREE.Matrix3()
+    this.toEc.set(1, 0, 0, 0, Math.cos(-this.axisTilt), Math.sin(-this.axisTilt), 0, -Math.sin(-this.axisTilt), Math.cos(-this.axisTilt))
+    this.toEq = new THREE.Matrix3()
+    this.toEq.set(1, 0, 0, 0, Math.cos(-this.axisTilt), -Math.sin(-this.axisTilt), 0, Math.sin(-this.axisTilt), Math.cos(-this.axisTilt))
   }
 
   show() {

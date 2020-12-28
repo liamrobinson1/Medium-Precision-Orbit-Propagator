@@ -22,6 +22,7 @@ var earthEqRadius = 6378.1370
 var earthPolRadius = 6356.7523142
 var earthOmega = 7.2921150 * 10 ** -5
 var earthAxisTilt = 0.4101524
+// var earthAxisTilt = 0
 
 let moon
 let moonRender
@@ -167,7 +168,7 @@ function setUpScene() {
   renderer.setPixelRatio(window.devicePixelRatio)
   document.body.appendChild(renderer.domElement)
   scene = new THREE.Scene()
-  cam = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 1, 300000000)
+  cam = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 300000000)
   const controls = new THREE.OrbitControls(cam, renderer.domElement);
   controls.zoomSpeed = 0.1
   controls.panSpeed = 0.3
@@ -201,7 +202,7 @@ function createPlanets() {
     sunRender.visible = true;
     scene.add(sunRender);
 
-    cam.position.set(8000, 0, 0);
+    cam.position.set(16000, 0, 0);
     cam.lookAt(0, 0, 0)
 
     // var clouds

@@ -1,5 +1,5 @@
 
-class GravSat { //[1867.27869, -5349.42646, 3744.90429, 8.292274371, -0.820936859, -4.298237588]
+class GravSat { //[1867.27869, -5349.42646, 3744.90429, 6.292274371, -0.820936859, -4.298237588]
   constructor(r, t, satMass) {
     // this.pos = new THREE.Vector3(earth.pos.x + r * cos(t), earth.pos.y + -r * sin(t))
     // this.vel = new THREE.Vector3(-sin(t), -cos(t) + 0.00001, .4).mult((G * earth.mass / r) ** 0.5)
@@ -315,12 +315,7 @@ class GravSat { //[1867.27869, -5349.42646, 3744.90429, 8.292274371, -0.82093685
 
   propToAscendingNode(body) {
     var stepSize = 1
-    if(this.AOP > PI) {
-      var thetaValue = 2 * PI - this.AOP
-    }
-    else {
-      var thetaValue = this.AOP
-    }
+    var thetaValue = 2 * PI - this.AOP
 
     var propagator = new Propagator(2, 1, this.state, time.timeSinceCreation, "No Interp", 1)
     propagator.propagateToValue(body, "theta", thetaValue, 1, stepSize)
@@ -330,8 +325,15 @@ class GravSat { //[1867.27869, -5349.42646, 3744.90429, 8.292274371, -0.82093685
 
   propToDescendingNode(body) {
     var stepSize = 1
+    if(this.AOP > PI) {
+      var thetaValue = 3 * PI - this.AOP
+    }
+    else {
+      var thetaValue = PI - this.AOP
+    }
+
     var propagator = new Propagator(2, 1, this.state, time.timeSinceCreation, "No Interp", 1)
-    propagator.propagateToValue(body, "theta", PI - this.AOP, 1, stepSize)
+    propagator.propagateToValue(body, "theta", thetaValue, 1, stepSize)
 
     this.prepareForAnimation(earth, propagator)
   }

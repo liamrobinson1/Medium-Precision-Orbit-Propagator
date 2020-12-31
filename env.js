@@ -90,6 +90,9 @@ class Time {
     if(this.halt == 0) {
       this.currentFrame += 1
       this.timeSinceCreation += this.delta
+      if(animator.animating == false) {
+        this.delta = timeSlider.value()
+      }
     }
 
     if(this.halt == 1 && p5.keyIsDown(ENTER)) {
@@ -100,36 +103,6 @@ class Time {
     }
   }
 }
-
-// function drawVectors() {
-//   var earthAcc = p5.Vector.mult(sat.pos, -earth.mu / sat.pos.mag() ** 3).setMag(8)
-//   var moonPS = p5.Vector.sub(sat.pos, moon.pos)
-//   var moonAcc = p5.Vector.mult(moonPS, -moon.mu / moonPS.mag() ** 3).setMag(8)
-//
-//   clif("earthAcc", earthAcc)
-//
-//   push()
-//   translate(earth.pos.x , earth.pos.y , earth.pos.z )
-//   stroke(0, 255, 0)
-//   line(0, 0, 0, sat.pos.x , sat.pos.y , sat.pos.z )
-//   stroke(200)
-//   translate(sat.pos.x , sat.pos.y , sat.pos.z )
-//   line(0, 0, 0, (moon.pos.x - sat.pos.x) , (moon.pos.y - sat.pos.y) , (moon.pos.z - sat.pos.z) )
-//   strokeWeight(2)
-//   stroke(255, 0, 0)
-//   line(0, 0, 0, earthAcc.x, earthAcc.y, earthAcc.z)
-//   line(0, 0, 0, moonAcc.x, moonAcc.y, moonAcc.z)
-//   pop()
-// }
-
-// function drawEcliptic() {
-//   push()
-//   stroke(255)
-//   noFill()
-//   // rotateX(PI / 2)
-//   plane(300, 300)
-//   pop()
-// }
 
 function environmentalUpdates() {
   moon.update()

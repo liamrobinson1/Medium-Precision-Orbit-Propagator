@@ -81,7 +81,7 @@ class Propagator {
   }
 
   searchAndDestroy() {
-    this.stepSize = this.stepSize / 2 //To make sure we can trigger the first halving
+    this.stepSize = this.stepSize / 4 //To make sure we can trigger the first halving
     this.searchStateHistory = [[], []]
     var i = 0
 
@@ -193,7 +193,7 @@ class Animator {
     this.animating = false
     this.i = 0
     this.trajectoryArray = []
-    time.delta = deltaT
+    time.delta = timeSlider.value()
     time.timeSinceCreation = this.finalTime
 
     console.log("At the end of animation, we're really at: ", sat.state, time.timeSinceCreation)

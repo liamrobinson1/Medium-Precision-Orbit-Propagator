@@ -8,6 +8,7 @@ const PI = 3.14159265358979
 let time
 var deltaT = 10
 var timeStop = 0
+let timeSlider
 
 let sat
 const satTrail = []
@@ -100,9 +101,10 @@ init()
 animate()
 
 function init() {
-    createEnvironmentObjects()
-    setUpScene()
-    createPlanets()
+  createEnvironmentObjects()
+  setUpScene()
+  createPlanets()
+  createUserControls()
 
 // TESTING CAPABILITIES HERE
     // var targeter = new Targeter(sat.state, earth, "periapsis", 10000, "V")
@@ -112,7 +114,9 @@ function init() {
 
 function animate() {
 
-  requestAnimationFrame(animate)
+  p5Controls()
+  resizeRendererToDisplaySize(renderer)
+
   if(animator.animating == false) {
     time.update() //This needs to be here to give time a chance to unpause itself
     if(time.halt == 0) {
@@ -128,11 +132,13 @@ function animate() {
       }
     }
   }
+
   else {
     removeEntities()
     animator.showNextStep()
   }
 
+  requestAnimationFrame(animate)
   renderer.render(scene, cam);
 }
 
@@ -190,19 +196,17 @@ function createEnvironmentObjects() {
 }
 
 function setUpScene() {
-  renderer = new THREE.WebGLRenderer()
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  renderer.setPixelRatio(window.devicePixelRatio)
-  document.body.appendChild(renderer.domElement)
+  renderer = new THREE.WebGLRenderer({canvas: document.querySelector('#c')});
+  renderer.setPixelRatio(window.innerWidth / window.innerHeight)
   scene = new THREE.Scene()
   cam = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 300000000)
   const controls = new THREE.OrbitControls(cam, renderer.domElement);
   controls.zoomSpeed = 0.1
   controls.panSpeed = 0.3
-  scene.add( new THREE.AmbientLight(0x222222) );
+  scene.add(new THREE.AmbientLight(0x222222));
   var light = new THREE.DirectionalLight(0xffffff, 1);
   light.position.set(1, 0, 0);
-  scene.add( light );
+  scene.add(light);
   scene.add(new THREE.AxesHelper(7000));
 }
 
@@ -241,4 +245,46 @@ function createPlanets() {
     // cities = createCities(planet_data[i].radius + 0.5, 1000, planet_data[i].emissive_texture)
     // cities.visible = true;
     // scene.add(cities);
+}
+
+function resizeRendererToDisplaySize(renderer) {
+  const canvas = renderer.domElement;
+  if(canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+    renderer.setSize(window.innerWidth, window.innerWidth, false);
+    cam.aspect = canvas.clientWidth / canvas.clientHeight;
+    cam.updateProjectionMatrix();
+  }
+}
+
+function p5Controls() {
+  if(time.timeSinceCreation > 0) {
+    if(sat.stillInOnePiece == 1) {
+      if(p5.keyIsDown(190) && time.halt == 0) {
+        sat.executeManeuver("V", 0.036)
+        time.keyPressedLastFrame = 1
+        time.burnMagnitude += 1
+      }
+
+      if(p5.keyIsDown(188) && time.halt == 0) {
+        sat.executeManeuver("V", -0.036)
+        time.keyPressedLastFrame = 1
+        time.burnMagnitude -= 1
+      }
+
+      if(p5.keyIsDown(ESCAPE)) {
+        time.halt = 1
+      }
+
+      if(!p5.keyIsDown(190) && !p5.keyIsDown(190) && time.keyPressedLastFrame == 1) {
+        time.keyPressedLastFrame = 0
+        time.burnMagnitude = 0
+      }
+    }
+  }
+}
+
+function createUserControls() {
+  timeSlider = createSlider(1, 20, 10);
+  timeSlider.position(100, 10);
+  timeSlider.style('width', '80px');
 }

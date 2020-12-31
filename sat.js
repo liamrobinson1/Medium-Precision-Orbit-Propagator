@@ -127,6 +127,9 @@ class GravSat { //[1867.27869, -5349.42646, 3744.90429, 6.292274371, -0.82093685
       this.AOP = 2 * PI - Math.acos(this.lineOfNodes.dot(this.eccVector) / (this.lineOfNodes.length() * this.eccVector.length()))
     }
 
+    //CALCULATING INCLIINATION
+    this.i = Math.acos(this.hVector.y / this.h) * 180 / PI
+
     //CALCULATING TRUE ANOMALY
     if(this.rBody.dot(this.vBody) > 0) {
       this.theta = Math.acos((this.p / this.RMAG - 1) / this.ecc)
@@ -159,7 +162,24 @@ class GravSat { //[1867.27869, -5349.42646, 3744.90429, 6.292274371, -0.82093685
     txt += "raan: " + this.RAAN + "\n"
     txt += "aop: " + this.AOP + "\n"
 
-    document.getElementById("info").innerText = txt
+    var displayDigits = 10
+
+    document.getElementById("ECC").innerHTML = this.ecc.toFixed(displayDigits)
+    document.getElementById("INC").innerHTML = this.i.toFixed(displayDigits)
+    document.getElementById("RAAN").innerHTML = this.RAAN.toFixed(displayDigits)
+    document.getElementById("AOP").innerHTML = this.AOP.toFixed(displayDigits)
+    document.getElementById("SMA").innerHTML = this.a.toFixed(displayDigits)
+    document.getElementById("TA").innerHTML = this.theta.toFixed(displayDigits)
+
+    document.getElementById("RMAG").innerHTML = this.RMAG.toFixed(displayDigits)
+    document.getElementById("RA").innerHTML = this.apoapsis.toFixed(displayDigits)
+    document.getElementById("RP").innerHTML = this.periapsis.toFixed(displayDigits)
+    document.getElementById("PERIOD").innerHTML = this.period.toFixed(displayDigits)
+
+    document.getElementById("E").innerHTML = this.e.toFixed(displayDigits)
+    document.getElementById("H").innerHTML = this.h.toFixed(displayDigits)
+
+    // document.getElementById("overlay").innerText = txt
   }
 
   calculateHyperbolicParameters() {
@@ -343,6 +363,22 @@ class GravSat { //[1867.27869, -5349.42646, 3744.90429, 6.292274371, -0.82093685
     var timeToPropagate = propagator.propagateToValue(body, "theta", thetaValue, 0.01, stepSize)
 
     this.prepareForAnimation(body, propagator)
+  }
+
+
+  propToRMAG(body, stepSize, rmagValue) {
+    var thetaValue = Math.acos(this.p / (rmagValue * this.ecc) - 1 / this.ecc)
+
+    if(!isNaN(thetaValue)) {
+      console.log("an RMAG of " + rmagValue.toString() + " corresponds with a theta of: " + thetaValue.toString())
+      var propagator = new Propagator(2, 1, this.state, time.timeSinceCreation, "No Interp", 1)
+      var timeToPropagate = propagator.propagateToValue(body, "theta", thetaValue, 0.01, stepSize)
+
+      this.prepareForAnimation(body, propagator)
+    }
+    else {
+      console.log("Please enter an RMAG value within the current apoapsis and periapsis")
+    }
   }
 
   propToPosVelAngle(body, angle) {

@@ -85,7 +85,7 @@ function calculateElements(state, body, requestedElement) { //CALCULATES KEPLERI
   hVector.crossVectors(rBody, vBody)
   var h = hVector.length()
 
-  var i = Math.acos(hVector.z / h) * 180 / PI
+  var i = Math.acos(hVector.y / h) * 180 / PI
 
   var orbitNormal = new THREE.Vector3()
   orbitNormal.copy(hVector).divideScalar(h)
@@ -143,8 +143,6 @@ function calculateElements(state, body, requestedElement) { //CALCULATES KEPLERI
       return vmag
     case "i":
       return i
-    case "y":
-      return rBody.y
     case "orbitNormal":
       return orbitNormal
     case "orbitBinormal":

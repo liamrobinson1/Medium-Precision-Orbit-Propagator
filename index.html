@@ -10,6 +10,14 @@
         margin: 0;
       }
 
+      p, tr, th {
+        font-family: helvetica;
+      }
+
+      .a {
+        target: "_blank";
+      }
+
       #c {
         width: 100%;
         height: 100%;
@@ -21,13 +29,15 @@
         position: absolute;
         z-index: 5;
         background: rgb(150, 150, 150);
+        border-radius: 5px;
+        padding: 10px;
       }
 
-      .orbitalElement {
-        z-index: 6;
-        position: relative;
-        padding: 4px;
+      .elementTitle {
+        z-index: 1;
+        margin-top: 2px;
       }
+
     </style>
 
     <script>
@@ -39,82 +49,88 @@
     <canvas id="c"></canvas>
 
     <div class="orbitalElementsContainer" id="classicalElements" style="bottom: 2%; left: 2%;">
-      <p style="font-weight: bold">ORBITAL ELEMENTS</p>
+      <p style="font-weight: bold" class="elementTitle">KEPLERIAN ELEMENTS</p>
       <table style="width:100%">
         <tr>
-          <td>ECC</td>
-          <td id="ECC"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Orbital_eccentricity">ECC</a></td>
+          <td><span style="font-style:italic;">&nbsp e &nbsp</span></td>
+          <td id="ECC">undefined</td>
         </tr>
         <tr>
-          <td>INC</td>
-          <td id="INC"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Orbital_inclination">INC</a></td>
+          <td><span style="font-style:italic;">&nbsp i &nbsp</span></td>
+          <td id="INC">undefined</td>
         </tr>
         <tr>
-          <td>SMA</td>
-          <td id="SMA"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Semi-major_and_semi-minor_axes">SMA</a></td>
+          <td><span style="font-style:italic;">&nbsp a &nbsp</span></td>
+          <td id="SMA">undefined</td>
         </tr>
         <tr>
-          <td>AOP</td>
-          <td id="AOP"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Argument_of_periapsis">AOP</a></td>
+          <td><span style="font-style:italic;">&nbsp ω &nbsp</span></td>
+          <td id="AOP">undefined</td>
         </tr>
         <tr>
-          <td>RAAN</td>
-          <td id="RAAN"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Longitude_of_the_ascending_node">RAAN</a></td>
+          <td>&nbsp Ω &nbsp</td>
+          <td id="RAAN">undefined</td>
         </tr>
         <tr>
-          <td>TA</td>
-          <td id="TA"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/True_anomaly">TA</a></td>
+          <td><span style="font-style:italic;">&nbsp θ &nbsp</span></td>
+          <td id="TA">undefined</td>
         </tr>
       </table>
     </div>
 
     <div class="orbitalElementsContainer" id="otherElements" style="bottom: 2%; right: 2%;">
-      <p style="font-weight: bold">OTHER QUANTITIES</p>
+      <p style="font-weight: bold" class="elementTitle">OTHER QUANTITIES</p>
       <table style="width:100%">
         <tr>
-          <td>RMAG</td>
-          <td id="RMAG"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Kepler_orbit#Development_of_the_laws">RMAG</a></td>
+          <td id="RMAG">undefined</td>
         </tr>
         <tr>
-          <td>RAPO</td>
-          <td id="RA"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Apsis">RAPO</a></td>
+          <td id="RA">undefined</td>
         </tr>
         <tr>
-          <td>RPER</td>
-          <td id="RP"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Apsis">RPER</a></td>
+          <td id="RP">undefined</td>
         </tr>
         <tr>
-          <td>PERIOD</td>
-          <td id="PERIOD"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Orbital_period">PERIOD</a></td>
+          <td id="PERIOD">undefined</td>
         </tr>
         <tr>
-          <td>E</td>
-          <td id="E"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Specific_orbital_energy">E</a></td>
+          <td id="E">undefined</td>
         </tr>
         <tr>
-          <td>H</td>
-          <td id="H"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Specific_angular_momentum">H</a></td>
+          <td id="H">undefined</td>
         </tr>
       </table>
     </div>
 
     <div class="orbitalElementsContainer" id="otherElements" style="top: 2%; right: 2%;">
-      <p style="font-weight: bold">ENVIRONMENT</p>
+      <p style="font-weight: bold" class="elementTitle"><a target="_blank" href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta%E2%80%93Fehlberg_method">INTEGRATOR</a> SETTINGS</p>
       <table style="width:100%">
         <tr>
-          <td>TIMESTEP</td>
-          <td id="TIMESTEP"></td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/Numerical_methods_for_ordinary_differential_equations">Timestep</a></td>
+          <td id="TIMESTEP">1</td>
         </tr>
         <tr>
-          <td>SECS ELAPSED</td>
-          <td id="SELAPSED"></td>
+          <td>Seconds Elapsed</td>
+          <td id="SELAPSED">0</td>
         </tr>
         <tr>
-          <td>J PERTURB.</td>
+          <td><a class="a" target="_blank" href="https://help.agi.com/stk/11.0.1/Content/stk/vehSat_orbitProp_2bodyJ2J4.htm">J2 Perturbation</a></td>
           <td><input type="checkbox" name="JPERTURBATIONS" />&nbsp;</td>
         </tr>
         <tr>
-          <td>N-BODY PERTURB.</td>
+          <td><a class="a" target="_blank" href="https://en.wikipedia.org/wiki/N-body_problem"><span style="font-style:italic;">n</span>-body Perturbations</a></td>
           <td><input type="checkbox" name="NPERTURBATIONS" />&nbsp;</td>
         </tr>
       </table>

@@ -41,7 +41,7 @@ class Mission {
         sat.propToApoapsis(earth, 1)
         break
       case 3:
-        this.targetQuantity(earth, "apoapsis", 100000, "V")
+        this.targetQuantity(earth, "apoapsis", 55000, "V")
         break
       case 4:
         this.targetQuantity(earth, "ecc", 0.02, "V")
@@ -50,6 +50,7 @@ class Mission {
   }
 
   targetQuantity(centralBody, paramToTarget, value, burnAxis) {
+    console.log(sat.state[3])
     console.log("Targeting " + paramToTarget + " = " + value.toString() + " with burn axis " + burnAxis)
     var targeter = new Targeter(sat.state, centralBody, paramToTarget, value, burnAxis)
     var burnVector = targeter.vary()
@@ -59,6 +60,7 @@ class Mission {
       sat.state[4] = sat.vel.y
       sat.state[5] = sat.vel.z
     }
+    console.log(sat.state[3])
     mission.ready = true
   }
 

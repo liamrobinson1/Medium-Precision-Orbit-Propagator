@@ -79,6 +79,7 @@ class Propagator {
     console.log(this.state[3])
     this.stepSize = this.stepSize / 4 //To make sure we can trigger the first halving
     this.searchStateHistory = [[], []]
+    this.timeDirectionHistory = []
     var i = 0
 
     while(Math.abs(this.stopValue - this.elementValue) > 0.0000001 && i < 500) {
@@ -89,6 +90,7 @@ class Propagator {
 
       this.extractAndSetState()
       this.searchStateHistory.push(this.state)
+      this.timeDirectionHistory.push(this.timeDirection)
 
       this.elapsedTime += this.stepSize * this.timeDirection
 
@@ -113,23 +115,26 @@ class Propagator {
       }
     }
 
-    this.state[3] = this.state[3] * this.timeDirection
-    this.state[4] = this.state[4] * this.timeDirection
-    this.state[5] = this.state[5] * this.timeDirection
-
-    console.log("At the end of the propagation, time direction is: ", this.timeDirection, this.state[3])
 
     if(!isNaN(this.elementValue)) { //Because a floating point error messes with propagating to theta = pi
+      this.state[3] = this.state[3] * this.timeDirection
+      this.state[4] = this.state[4] * this.timeDirection
+      this.state[5] = this.state[5] * this.timeDirection
+
       this.stateHistory[this.stateHistory.length - 1] = this.state
     }
     else {
       this.previousState = this.searchStateHistory[this.searchStateHistory.length - 3]
-      this.previousState[3] = this.previousState[3] * this.timeDirection
-      this.previousState[4] = this.previousState[4] * this.timeDirection
-      this.previousState[5] = this.previousState[5] * this.timeDirection
+      this.previousTimeDirection = this.timeDirectionHistory[this.timeDirectionHistory.length - 3]
+
+      this.previousState[3] = this.previousState[3] * this.previousTimeDirection
+      this.previousState[4] = this.previousState[4] * this.previousTimeDirection
+      this.previousState[5] = this.previousState[5] * this.previousTimeDirection
+
       this.stateHistory[this.stateHistory.length - 1] = this.previousState
       this.elapsedTime -= this.stepSize
     }
+    console.log("At the end of the propagation, time direction is: ", this.timeDirection, this.state[3])
   }
 
   extractAndSetState() {

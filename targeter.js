@@ -32,7 +32,7 @@ class Targeter {
       this.currentFunctionValue = calculateElements(this.state, this.centralBody, this.targetingWhat) - this.equalityValue
     }
 
-    console.log(this.currentFunctionValue.toFixed(3), this.currentControlValue.toFixed(3))
+    // console.log(this.currentFunctionValue.toFixed(3), this.currentControlValue.toFixed(3))
 
     while(abs(this.currentFunctionValue) > this.tolerance && attempts < this.attemptLimit) {
       attempts += 1

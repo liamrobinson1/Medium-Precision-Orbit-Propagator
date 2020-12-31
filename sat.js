@@ -144,24 +144,6 @@ class GravSat { //[1867.27869, -5349.42646, 3744.90429, 6.292274371, -0.82093685
   }
 
   displayElements() {
-    var txt = ""
-    txt += "timeElapsed in secs: " + time.timeSinceCreation + "\n"
-    txt += "VMAG: " + this.VMAG + "\n"
-    txt += "RMAG: " + this.RMAG + "\n"
-    txt += "h: " + this.h + "\n"
-    txt += "specificE: " + this.e + "\n"
-    txt += "period: " + this.period + "\n"
-    txt += "ecc: " + this.ecc + "\n"
-    txt += "eccvector: " + this.eccVector.x + " " + this.eccVector.y + " " + this.eccVector.z + "\n"
-    txt += "line of nodes: " + this.lineOfNodes.x + " " + this.lineOfNodes.y + " " + this.lineOfNodes.z + "\n"
-    txt += "apo: " + this.apoapsis + "\n"
-    txt += "peri: " + this.periapsis + "\n"
-    txt += "a: " + this.a + "\n"
-    txt += "gamma: " + this.gamma + "\n"
-    txt += "theta: " + this.theta + "\n"
-    txt += "raan: " + this.RAAN + "\n"
-    txt += "aop: " + this.AOP + "\n"
-
     var displayDigits = 10
 
     document.getElementById("ECC").innerHTML = this.ecc.toFixed(displayDigits)
@@ -181,8 +163,6 @@ class GravSat { //[1867.27869, -5349.42646, 3744.90429, 6.292274371, -0.82093685
 
     document.getElementById("TIMESTEP").innerHTML = time.delta
     document.getElementById("SELAPSED").innerHTML = time.timeSinceCreation.toFixed(2)
-
-    // document.getElementById("overlay").innerText = txt
   }
 
   calculateHyperbolicParameters() {
@@ -307,10 +287,8 @@ class GravSat { //[1867.27869, -5349.42646, 3744.90429, 6.292274371, -0.82093685
       this.saveGroundTrack(earth)
       this.showGroundTrack()
     }
-
-    if(frameCount % 4 == 0) {
-      this.displayElements()
-    }
+    
+    this.displayElements()
   }
 
   showTrail() {

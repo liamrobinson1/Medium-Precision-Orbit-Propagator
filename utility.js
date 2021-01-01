@@ -59,11 +59,14 @@ function showVertexPath(points, userColor) {
   scene.add(line)
 }
 
-function calculateElements(state, body, requestedElement) { //CALCULATES KEPLERIAN ELEMENTS WITH RESPECT TO A BODY
+function calculateElements(state, body, requestedElement, atTime) { //CALCULATES KEPLERIAN ELEMENTS WITH RESPECT TO A BODY
   var mu = G * body.mass
 
-  var rBody = new THREE.Vector3(state[0] - body.pos.x, state[1] - body.pos.y, state[2] - body.pos.z)
-  var vBody = new THREE.Vector3(state[3] - body.vel.x, state[4] - body.vel.y, state[5] - body.vel.z)
+  var bodyPos = body.queryState(atTime, "position")
+  var bodyVel = body.queryState(atTime, "velocity")
+
+  var rBody = new THREE.Vector3(state[0] - bodyPos.x, state[1] - bodyPos.y, state[2] - bodyPos.z)
+  var vBody = new THREE.Vector3(state[3] - bodyVel.x, state[4] - bodyVel.y, state[5] - bodyVel.z)
 
   var rBodyHat = new THREE.Vector3()
   var vBodyHat = new THREE.Vector3()

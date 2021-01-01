@@ -44,10 +44,10 @@ class Mission {
         this.targetQuantity(earth, "apoapsis", 359000, "V", 25)
         break
       case 4:
-        sat.propToTheta(moon, 50, 6)
+        sat.propToTheta(moon, 50, 0.02)
         break
       case 5:
-        this.targetQuantity(moon, "ecc", 0.1, "V", 4)
+        this.targetQuantity(moon, "ecc", 0.6, "V", 4)
         break
     }
   }

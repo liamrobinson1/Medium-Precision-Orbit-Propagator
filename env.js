@@ -17,8 +17,14 @@ class Moon {
     }
   }
 
-  queryPosition(time) {
-    return new THREE.Vector3(this.r * Math.sin(this.thetaDot * time) + earth.pos.x, earth.pos.y, this.r * Math.cos(this.thetaDot * time) + earth.pos.z)
+  queryState(time, requested) {
+    switch(requested) {
+      case "position":
+      return new THREE.Vector3(this.r * Math.sin(this.thetaDot * time) + earth.pos.x, earth.pos.y, this.r * Math.cos(this.thetaDot * time) + earth.pos.z)
+      case "velocity":
+      return new THREE.Vector3(this.thetaDot * this.r * Math.cos(this.thetaDot * time), 0, -this.thetaDot * this.r * Math.sin(this.thetaDot * time))
+
+    }
   }
 
   show() {
@@ -63,6 +69,15 @@ class Earth {
     this.rotation += this.rotationIncrement
     earthRender.rotation.y = this.rotation
     earthRender.rotation.x = this.axisTilt
+  }
+
+  queryState(time, requested) {
+    switch(requested) {
+      case "position":
+        return new THREE.Vector3(0, 0, 0)
+      case "velocity":
+        return new THREE.Vector3(0, 0, 0)
+    }
   }
 }
 

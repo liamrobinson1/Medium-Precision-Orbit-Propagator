@@ -33,7 +33,7 @@ class Propagator {
   }
 
   evaluateStoppingCondition() {
-    this.elementValue = calculateElements(this.state, this.centralBody, this.stopCondition)
+    this.elementValue = calculateElements(this.state, this.centralBody, this.stopCondition, this.elapsedTime + time.timeSinceCreation)
     this.valueHistory.push(this.elementValue)
     this.diffHistory.push(this.elementValue - this.stopValue)
     this.mostRecentAbsDiff = abs(this.valueHistory[this.valueHistory.length - 1] - this.valueHistory[this.valueHistory.length - 2])
@@ -89,7 +89,7 @@ class Propagator {
     tic("propagationTimer")
     while((this.evaluateStoppingCondition() == false && i < 10000) || i < 10) {
       i += 1
-      this.integrator = new RungeKutta45(this.elapsedTime, this.state, this.stepSize, this.stepSize, 10 ** -6)
+      this.integrator = new RungeKutta45(this.elapsedTime + time.timeSinceCreation, this.state, this.stepSize, this.stepSize, 10 ** -6)
       this.results = this.integrator.iterate()
 
       this.extractAndSetState()
@@ -109,16 +109,15 @@ class Propagator {
 
   searchAndDestroy() {
     console.log("I got handed to S+D", this.elementValue)
-    this.stepSize = this.stepSize / 4                                           //To make sure we can trigger the first halving
+    this.stepSize = this.stepSize / 2                                         //To make sure we can trigger the first halving
     this.searchStateHistory = [[], []]
     this.timeDirectionHistory = []
     var i = 0
 
     while(Math.abs(this.stopValue - this.elementValue) > 0.0000001 && i < 500) {
-      console.log(this.elementValue)
       i += 1
 
-      this.integrator = new RungeKutta45(this.elapsedTime, this.state, this.stepSize, this.stepSize, 10 ** -6)
+      this.integrator = new RungeKutta45(this.elapsedTime + time.timeSinceCreation, this.state, this.stepSize, this.stepSize, 10 ** -6)
       this.results = this.integrator.iterate()
 
       this.extractAndSetState()
@@ -127,11 +126,14 @@ class Propagator {
 
       this.elapsedTime += this.stepSize * this.timeDirection
 
-      this.elementValue = calculateElements(this.state, this.centralBody, this.stopCondition)
-
-      if(this.timeDirection == -1) { //Because reversing time has consequences
-        this.elementValue = 2 * PI - this.elementValue
-      }
+      this.tempState = [this.state[0], this.state[1], this.state[2], this.state[3] * this.timeDirection, this.state[4] * this.timeDirection, this.state[5] * this.timeDirection]
+      this.elementValue = calculateElements(this.tempState, this.centralBody, this.stopCondition, this.elapsedTime + time.timeSinceCreation)
+      // console.log(this.state, this.tempState, this.timeDirection, this.elementValue)
+      console.log(this.elapsedTime, this.elementValue)
+      //
+      // if(this.timeDirection == -1) { //Because reversing time has consequences
+      //   this.elementValue = 2 * PI - this.elementValue
+      // }
 
       this.valueHistory.push(this.elementValue)
       this.diffHistory.push(this.elementValue - this.stopValue)
@@ -140,7 +142,7 @@ class Propagator {
       this.previousDiff = this.diffHistory[this.diffHistory.length - 2]
 
       if(Math.sign(this.mostRecentDiff) != Math.sign(this.previousDiff)) { //Then we know we've passsed it. time to reverse time and half our step size
-        this.stepSize = this.stepSize / 2
+        this.stepSize = this.stepSize / 3
         this.timeDirection = -this.timeDirection
         this.state[3] = -this.state[3]
         this.state[4] = -this.state[4]

@@ -5,7 +5,7 @@ class Targeter {
     this.centralBody = centralBody
     this.targetingWhat = requestedVariable
     this.equalityValue = equalityValue
-    this.initialValue = calculateElements(this.state, centralBody, requestedVariable)
+    this.initialValue = calculateElements(this.state, centralBody, requestedVariable, time.timeSinceCreation)
     this.burnAxis = burnAxis
     this.tolerance = 0.0001                                                     //Hardcoded for now
     this.attemptLimit = 600
@@ -16,23 +16,23 @@ class Targeter {
     var attempts = 0
     var fprime = 0
     //We have to collect two data points in order to apply Newton-Raphson
-    this.previousFunctionValue = calculateElements(this.state, this.centralBody, this.targetingWhat) - this.equalityValue
+    this.previousFunctionValue = calculateElements(this.state, this.centralBody, this.targetingWhat, time.timeSinceCreation) - this.equalityValue
     this.previousControlValue = 0
 
-    console.log(this.previousFunctionValue.toFixed(3), this.previousControlValue.toFixed(3))
+    console.log(this.centralBody, this.previousFunctionValue.toFixed(3), this.previousControlValue.toFixed(3))
 
     this.currentControlValue = 0.04
     this.burn(this.currentControlValue)
-    this.currentFunctionValue = calculateElements(this.state, this.centralBody, this.targetingWhat) - this.equalityValue
+    this.currentFunctionValue = calculateElements(this.state, this.centralBody, this.targetingWhat, time.timeSinceCreation) - this.equalityValue
 
     if(abs(this.currentFunctionValue) > abs(this.previousFunctionValue)) {
       this.state = [this.iState[0], this.iState[1], this.iState[2], this.iState[3], this.iState[4], this.iState[5]]
       this.currentControlValue = -0.04
       this.burn(this.currentControlValue)
-      this.currentFunctionValue = calculateElements(this.state, this.centralBody, this.targetingWhat) - this.equalityValue
+      this.currentFunctionValue = calculateElements(this.state, this.centralBody, this.targetingWhat, time.timeSinceCreation) - this.equalityValue
     }
 
-    // console.log(this.currentFunctionValue.toFixed(3), this.currentControlValue.toFixed(3))
+    console.log(this.currentFunctionValue.toFixed(3), this.currentControlValue.toFixed(3))
 
     while(abs(this.currentFunctionValue) > this.tolerance && attempts < this.attemptLimit) {
       attempts += 1
@@ -45,8 +45,10 @@ class Targeter {
       this.burn(this.currentControlValue)
 
       this.previousFunctionValue = this.currentFunctionValue
-      this.currentFunctionValue = calculateElements(this.state, this.centralBody, this.targetingWhat) - this.equalityValue
+      this.currentFunctionValue = calculateElements(this.state, this.centralBody, this.targetingWhat, time.timeSinceCreation) - this.equalityValue
 
+      console.log(this.currentFunctionValue.toFixed(3), this.currentControlValue.toFixed(3))
+      
       if(abs(this.currentControlValue - this.previousControlValue) > 100000) {
         alert("No Correlation between equality and control variables")
         break
@@ -73,17 +75,17 @@ class Targeter {
         v.setLength(v.length() + dv)
         break
       case "N":
-        var orbitNormal = calculateElements(this.state, earth, "orbitNormal")
+        var orbitNormal = calculateElements(this.state, earth, "orbitNormal", time.timeSinceCreation)
         v.add(orbitNormal.multiplyScalar(dv))
         break
       case "B":
-        var orbitBinormal = calculateElements(this.state, earth, "orbitBinormal")
+        var orbitBinormal = calculateElements(this.state, earth, "orbitBinormal", time.timeSinceCreation)
         v.add(orbitBinormal.multiplyScalar(dv))
         break
       case "INCCHANGE":
         var deltaI = this.equalityValue - this.initialValue
-        var orbitNormal = calculateElements(this.state, earth, "orbitNormal")
-        var orbitBinormal = calculateElements(this.state, earth, "orbitBinormal")
+        var orbitNormal = calculateElements(this.state, earth, "orbitNormal", time.timeSinceCreation)
+        var orbitBinormal = calculateElements(this.state, earth, "orbitBinormal", time.timeSinceCreation)
         orbitNormal.applyAxisAngle(orbitBinormal, deltaI / 2 * PI / 180)
 
         v.add(orbitNormal.multiplyScalar(dv))

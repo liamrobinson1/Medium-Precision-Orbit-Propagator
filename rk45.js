@@ -123,7 +123,7 @@ class RungeKutta45 {
   }
 
   dot(i, t, y0, y1, y2, y3, y4, y5) {
-    var moonPE = moon.queryPosition(t)
+    var moonPE = moon.queryState(t, "position")
     var moonPS = new THREE.Vector3(y0 - moonPE.x, y1 - moonPE.y, y2 - moonPE.z)
     const J2 = 1082.64 * 10 ** -6
 
